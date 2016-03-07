@@ -34,7 +34,6 @@
 *.ngm
 *.xrpt
 *.csv
-*.txt
 *.xml
 *.exe
 *.wdb
