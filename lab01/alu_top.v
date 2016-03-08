@@ -43,7 +43,17 @@ input [2-1:0] operation;
 output        result;
 output        cout;
 
-reg           result;
+wire A, B;
+
+assign A = src1 ^ A_invert;
+assign B = src2 ^ B_invert;
+
+assign result = operation == 2'b00 ? (A & B)
+					: (operation == 2'b01 ? (A | B)
+					: (operation == 2'b10 ? (A ^ B ^ cin)
+					: 0));
+
+assign cout = (A & B) | ((A ^ B) & cin);
 
 always@( * )
 begin
