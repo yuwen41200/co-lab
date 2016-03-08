@@ -49,9 +49,9 @@ assign A = src1 ^ A_invert;
 assign B = src2 ^ B_invert;
 
 assign result = operation == 2'b00 ? (A & B)
-					: (operation == 2'b01 ? (A | B)
-					: (operation == 2'b10 ? (A ^ B ^ cin)
-					: 0));
+	: (operation == 2'b01 ? (A | B)
+	: (operation == 2'b10 ? (A ^ B ^ cin)
+	: less));
 
 assign cout = (A & B) | ((A ^ B) & cin);
 
