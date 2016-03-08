@@ -44,10 +44,10 @@ output          zero;
 output          cout;
 output          overflow;
 
-//reg    [32-1:0] result;
+/*reg    [32-1:0] result;
 reg             zero;
 reg             cout;
-reg             overflow;
+reg             overflow;*/
 
 
 wire cin1, cin2, cin3, cin4, cin5, cin6, cin7, cin8, cin9, cin10, cin11, cin12, cin13, cin14, cin15, cin16, cin17, cin18, cin19, cin20, cin21, cin22, cin23, cin24, cin25, cin26, cin27, cin28, cin29, cin30, cin31;
@@ -62,10 +62,13 @@ assign A_invert = ALU_control == 4'b1100 || ALU_control == 4'b1101 ? 1 : 0;
 assign B_invert = ALU_control == 4'b0110 || ALU_control == 4'b1100 || ALU_control == 4'b1101 || ALU_control == 4'b0111 ? 1 : 0;
 assign operation = ALU_control == 4'b0000 || ALU_control == 4'b1100 ? 2'b00
 	: (ALU_control == 4'b0001 || ALU_control == 4'b1101 ? 2'b01
-	: (ALU_control == 4'b0010 || ALU_control == 4'b0110 || ALU_control == 4'b0111 ? 2'b10
-	: 2'b11)); // pending changes for bonus operations
+	: (ALU_control == 4'b0010 || ALU_control == 4'b0110 ? 2'b10
+	: (ALU_control == 4'b0111 ? 2'b11
+	: 2'b11))); // pending changes for bonus operations
 assign operation0 = ALU_control == 4'b0111 ? 2'b11 : operation;
 assign cin0 = ALU_control == 4'b0110 || ALU_control == 4'b0111 ? 1 : 0;
+
+wire msb1, msb2;
 
 alu_top alu0(.src1(src1[0]), .src2(src2[0]), .less(less), .A_invert(A_invert), .B_invert(B_invert), .cin(cin0), .operation(operation0), .result(result0), .cout(cin1));
 alu_top alu1(.src1(src1[1]), .src2(src2[1]), .less(0), .A_invert(A_invert), .B_invert(B_invert), .cin(cin1), .operation(operation), .result(result1), .cout(cin2));
@@ -101,5 +104,13 @@ alu_top alu30(.src1(src1[30]), .src2(src2[30]), .less(0), .A_invert(A_invert), .
 alu_top alu31(.src1(src1[31]), .src2(src2[31]), .less(0), .A_invert(A_invert), .B_invert(B_invert), .cin(cin31), .operation(operation), .result(result31), .cout(cin32));
 
 assign result = {result31, result30, result29, result28, result27, result26, result25, result24, result23, result22, result21, result20, result19, result18, result17, result16, result15, result14, result13, result12, result11, result10, result9, result8, result7, result6, result5, result4, result3, result2, result1, result0};
+
+assign overflow = cin32 ^ cin31;
+assign cout = cin32;
+assign zero = !overflow && result == 32'b0;
+
+assign msb1 = src1[31] ^ A_invert;
+assign msb2 = src2[31] ^ B_invert;
+assign less = (msb1 ^ msb2 ^ cin31) | (msb1 && msb2 && !cin31); // wrong
 
 endmodule
