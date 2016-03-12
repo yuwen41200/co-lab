@@ -2,7 +2,7 @@
 
 `define BONUS
 
-module testbench;
+module alu_tb;
 
 `ifdef BONUS
 parameter PATTERN_NUMBER = 6'd11;

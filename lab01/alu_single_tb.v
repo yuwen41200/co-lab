@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module testbench_top;
+module alu_single_tb;
 
 // Inputs
 reg src1;
@@ -19,7 +19,7 @@ wire cout;
 integer i;
 
 // Instantiate the Unit Under Test (UUT)
-alu_top uut (
+alu_single uut (
 	.src1(src1),
 	.src2(src2),
 	.less(less),
