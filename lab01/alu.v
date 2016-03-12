@@ -52,15 +52,16 @@ assign operation = ((ALU_control == 4'b0000 || ALU_control == 4'b1100) ? 2'b00 /
 // Set Not Equal   100  !(a + b' = 0)
 
 assign overflow = cin[32] ^ cin[31];
-assign zero = (real_result == 32'b0);
-assign cout = cin[32];
+assign real_zero = (real_result == 32'b0);
+assign zero = (result == 32'b0);
+assign cout = (ALU_control == 4'b0010 || ALU_control == 4'b0110) ? cin[32] : 0;
 
 assign less[0] = ((bonus_control == 3'b000 &&   real_result[31] == 1)           ? 1
-               : ((bonus_control == 3'b001 &&  (real_result[31] == 0 && ~zero)) ? 1
-               : ((bonus_control == 3'b010 && !(real_result[31] == 0 && ~zero)) ? 1
+               : ((bonus_control == 3'b001 &&  (real_result[31] == 0 && ~real_zero)) ? 1
+               : ((bonus_control == 3'b010 && !(real_result[31] == 0 && ~real_zero)) ? 1
                : ((bonus_control == 3'b011 &&  !real_result[31] == 1)           ? 1
-               : ((bonus_control == 3'b110 &&   zero)                           ? 1
-               : ((bonus_control == 3'b100 &&  ~zero)                           ? 1
+               : ((bonus_control == 3'b110 &&   real_zero)                           ? 1
+               : ((bonus_control == 3'b100 &&  ~real_zero)                           ? 1
                :   0))))));
 
 generate
