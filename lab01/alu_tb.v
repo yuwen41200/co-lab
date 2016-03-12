@@ -171,7 +171,7 @@ always @(posedge clk) begin
 				endcase
 				$display(" No.%2d error!", pattern_count);
 				$display(" Correct result: %h     Correct ZCV: %b", result_correct, zcv_correct[3-1:0]);
-				$display(" Your result: %h     Your ZCV: %b\n", result_out, zcv_out);
+				$display(" Your result: %h        Your ZCV: %b\n", result_out, zcv_out);
 				$display("***************************************************");
 				error_count <= error_count + 6'd1;
 			end
