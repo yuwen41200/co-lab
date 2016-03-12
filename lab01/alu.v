@@ -1,6 +1,6 @@
 /**
  * Top Module: A 32-bit Arithmetic Logic Unit
- * by NCTU CS 0000000 Po-han Chen, 0316213 Yu-wen Pwu
+ * by NCTU CS 0113110 Po-han Chen, 0316213 Yu-wen Pwu
  */
 
 module alu (
