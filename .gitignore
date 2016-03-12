@@ -28,6 +28,7 @@
 *.xpi
 *.xst
 *.xwbt
+*.txt
 *.html
 *.map
 *.mrp
@@ -46,4 +47,3 @@
 */isim/
 */xlnx_auto_0_xdb/
 */xst/
-lab01/*.txt
