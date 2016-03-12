@@ -4,33 +4,34 @@
  */
 
 module alu_single (
-	input        src1,
-	input        src2,
-	input        less,
-	input        src1_invert,
-	input        src2_invert,
-	input        cin,
-	input  [1:0] operation,
-	output       real_result,
-	output       result,
-	output       cout
+	input        src1,        // source 1
+	input        src2,        // source 2
+	input        less,        // less signal
+	input        src1_invert, // invert source 1
+	input        src2_invert, // invert source 2
+	input        cin,         // carry in
+	input  [1:0] operation,   // operation input
+	output       real_result, // calculated result
+	output       result,      // final result
+	output       cout         // carry out
 );
 
-wire A, B;
+wire a, b;
 
-assign A = src1 ^ src1_invert;
-assign B = src2 ^ src2_invert;
+// Meaning of signal `operation`
+// 00 &
+// 01 |
+// 10 +
+// 11 SLT
 
-assign result = operation == 2'b00 ? (A & B)
-	: (operation == 2'b01 ? (A | B)
-	: (operation == 2'b10 ? (A ^ B ^ cin)
-	: less));
+assign a = src1 ^ src1_invert;
+assign b = src2 ^ src2_invert;
 
-assign cout = (A & B) | ((A ^ B) & cin);
+assign real_result = ((operation == 2'b00) ? (a & b)
+                   : ((operation == 2'b01) ? (a | b)
+                   :  (a ^ b ^ cin)));
 
-always@( * )
-begin
-
-end
+assign result = (operation == 2'b11) ? less : real_result;
+assign cout = (a & b) | ((a ^ b) & cin);
 
 endmodule

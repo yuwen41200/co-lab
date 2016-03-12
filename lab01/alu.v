@@ -10,7 +10,7 @@ module alu (
 	input  [3:0]  ALU_control,   // ALU control input
 	input  [2:0]  bonus_control, // bonus control input
 	output [31:0] result,        // result
-	output        zero,          // must be set when the output is 0
+	output        zero,          // result is 0
 	output        cout,          // carry out
 	output        overflow       // overflow
 );
@@ -32,10 +32,12 @@ wire [31:0] real_result;
 // SLT  0111 -> bonus_control
 
 assign less[31:1] = 31'b0;
+assign cin[0] = (ALU_control == 4'b0110 || ALU_control == 4'b0111) ? 1 : 0;
+
 assign src1_invert = (ALU_control == 4'b1100 || ALU_control == 4'b1101) ? 1 : 0;
 assign src2_invert = (ALU_control == 4'b0110 || ALU_control == 4'b1100 ||
                       ALU_control == 4'b1101 || ALU_control == 4'b0111) ? 1 : 0;
-assign cin[0] = (ALU_control == 4'b0110 || ALU_control == 4'b0111) ? 1 : 0;
+
 assign operation = ((ALU_control == 4'b0000 || ALU_control == 4'b1100) ? 2'b00 // &
                  : ((ALU_control == 4'b0001 || ALU_control == 4'b1101) ? 2'b01 // |
                  : ((ALU_control == 4'b0010 || ALU_control == 4'b0110) ? 2'b10 // +
@@ -52,6 +54,7 @@ assign operation = ((ALU_control == 4'b0000 || ALU_control == 4'b1100) ? 2'b00 /
 assign overflow = cin[32] ^ cin[31];
 assign zero = (real_result == 32'b0);
 assign cout = cin[32];
+
 assign less[0] = ((bonus_control == 3'b000 &&   real_result[31] == 1)           ? 1
                : ((bonus_control == 3'b001 &&  (real_result[31] == 0 && ~zero)) ? 1
                : ((bonus_control == 3'b010 && !(real_result[31] == 0 && ~zero)) ? 1
