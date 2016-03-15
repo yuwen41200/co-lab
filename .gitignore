@@ -42,6 +42,7 @@
 *.nlf
 *.sdf
 *_timesim.v
+*.xpr
 */_ngo/
 */iseconfig/
 */isim/
@@ -50,5 +51,5 @@
 *.cache/
 *.hw/
 *.ip_user_files/
+*.runs/
 *.sim/
-*.xpr
