@@ -15,6 +15,7 @@ module alu (
 	output        overflow       // overflow
 );
 
+reg         less_reg;
 wire        less;
 wire        real_less;
 wire        equal;
@@ -62,13 +63,7 @@ assign cout = (ALU_control == 4'b0010 || ALU_control == 4'b0110) ? cin[32] : 0;
 assign equal = (src1 == src2);
 assign real_less = (src1_31 ^ src2_31 ^ cin[31]) | (src1_31 && src2_31 && !cin[31]);
 
-assign less = ((bonus_control == 3'b000 &&   real_less)           ? 1
-            : ((bonus_control == 3'b001 && !(real_less || equal)) ? 1
-            : ((bonus_control == 3'b010 &&  (real_less || equal)) ? 1
-            : ((bonus_control == 3'b011 &&  !real_less)           ? 1
-            : ((bonus_control == 3'b110 &&   equal)               ? 1
-            : ((bonus_control == 3'b100 &&  !equal)               ? 1
-            :   0))))));
+assign less = less_reg;
 
 alu_single alu_single_ins_0 (
 	.src1(src1[0]),
@@ -98,5 +93,17 @@ generate
 		);
 	end
 endgenerate
+
+always @(*) begin
+	case (bonus_control)
+		3'b000:  less_reg =   real_less;
+		3'b001:  less_reg = !(real_less || equal);
+		3'b010:  less_reg =  (real_less || equal);
+		3'b011:  less_reg =  !real_less;
+		3'b110:  less_reg =   equal;
+		3'b100:  less_reg =  !equal;
+		default: less_reg =   real_less;
+	endcase
+end
 
 endmodule

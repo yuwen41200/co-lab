@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-`define BONUS
+// `define BONUS
 
 module alu_tb;
 
