@@ -39,9 +39,9 @@ assign cin[0] = (ALU_control == 4'b0110 || ALU_control == 4'b0111) ? 1 : 0;
 assign src1_invert = (ALU_control == 4'b1100 || ALU_control == 4'b1101) ? 1 : 0;
 assign src2_invert = (ALU_control == 4'b0110 || ALU_control == 4'b1100 ||
                       ALU_control == 4'b1101 || ALU_control == 4'b0111) ? 1 : 0;
+
 assign src1_31 = src1[31] ^ src1_invert;
 assign src2_31 = src2[31] ^ src2_invert;
-
 
 assign operation = ((ALU_control == 4'b0000 || ALU_control == 4'b1100) ? 2'b00 // &
                  : ((ALU_control == 4'b0001 || ALU_control == 4'b1101) ? 2'b01 // |
@@ -60,14 +60,14 @@ assign overflow = cin[32] ^ cin[31];
 assign real_zero = (result == 32'b0);
 assign cout = (ALU_control == 4'b0010 || ALU_control == 4'b0110) ? cin[32] : 0;
 assign equal = (src1 == src2);
-
 assign real_less = (src1_31 ^ src2_31 ^ cin[31]) | (src1_31 && src2_31 && !cin[31]);
-assign less = ((bonus_control == 3'b000 &&    real_less)            ? 1
-            : ((bonus_control == 3'b001 &&  (!real_less && !equal)) ? 1
-            : ((bonus_control == 3'b010 && !(!real_less && !equal)) ? 1
-            : ((bonus_control == 3'b011 &&   !real_less)            ? 1
-            : ((bonus_control == 3'b110 &&    equal)                ? 1
-            : ((bonus_control == 3'b100 &&   !equal)                ? 1
+
+assign less = ((bonus_control == 3'b000 &&   real_less)           ? 1
+            : ((bonus_control == 3'b001 && !(real_less || equal)) ? 1
+            : ((bonus_control == 3'b010 &&  (real_less || equal)) ? 1
+            : ((bonus_control == 3'b011 &&  !real_less)           ? 1
+            : ((bonus_control == 3'b110 &&   equal)               ? 1
+            : ((bonus_control == 3'b100 &&  !equal)               ? 1
             :   0))))));
 
 alu_single alu_single_ins_0 (
@@ -81,6 +81,7 @@ alu_single alu_single_ins_0 (
 	.result(result[0]),
 	.cout(cin[1])
 );
+
 generate
 	genvar i;
 	for (i = 1; i < 32; i = i + 1) begin:alu_single_group

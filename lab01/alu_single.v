@@ -29,7 +29,7 @@ assign b = src2 ^ src2_invert;
 assign result = ((operation == 2'b00) ? (a & b)
               : ((operation == 2'b01) ? (a | b)
               : ((operation == 2'b10) ? (a ^ b ^ cin)
-              :  less)));
+              :   less)));
 
 assign cout = (a & b) | ((a ^ b) & cin);
 
