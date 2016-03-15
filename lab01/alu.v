@@ -58,7 +58,7 @@ assign operation = ((ALU_control == 4'b0000 || ALU_control == 4'b1100) ? 2'b00 /
 // Set Not Equal   100  !(a + b' = 0)
 
 assign overflow = cin[32] ^ cin[31];
-assign real_zero = (result == 32'b0);
+assign zero = (result == 32'b0);
 assign cout = (ALU_control == 4'b0010 || ALU_control == 4'b0110) ? cin[32] : 0;
 assign equal = (src1 == src2);
 assign real_less = (src1_31 ^ src2_31 ^ cin[31]) | (src1_31 && src2_31 && !cin[31]);
