@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-// `define BONUS
+`define BONUS
 
 module alu_tb;
 
@@ -149,23 +149,23 @@ always @(posedge clk) begin
 			else begin
 				$display("***************************************************");
 				case (mem_opcode[pattern_count-1])
-					4'd0:$display(" AND error! ");
-					4'd1:$display(" OR error! ");
-					4'd2:$display(" ADD error! ");
-					4'd6:$display(" SUB error! ");
+					4'd0: $display(" AND error! ");
+					4'd1: $display(" OR error! ");
+					4'd2: $display(" ADD error! ");
+					4'd6: $display(" SUB error! ");
 					4'd7:
 						case (bonus_check)
-							4'd0:$display(" SLT error! ");
-							4'd6:$display(" SEQ error! ");
-							4'd1:$display(" SGT error! ");
-							4'd2:$display(" SLE error! ");
-							4'd3:$display(" SGE error! ");
-							4'd4:$display(" SNE error! ");
+							4'd0: $display(" SLT error! ");
+							4'd6: $display(" SEQ error! ");
+							4'd1: $display(" SGT error! ");
+							4'd2: $display(" SLE error! ");
+							4'd3: $display(" SGE error! ");
+							4'd4: $display(" SNE error! ");
 							default: begin
 							end
 						endcase
-					4'd12:$display(" NOR error! ");
-					4'd13:$display(" NAND error! ");
+					4'd12: $display(" NOR error! ");
+					4'd13: $display(" NAND error! ");
 					default: begin
 					end
 				endcase
