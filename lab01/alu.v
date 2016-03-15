@@ -15,12 +15,15 @@ module alu (
 	output        overflow       // overflow
 );
 
-wire [31:0] less;
+wire        less;
+wire        real_less;
+wire        equal;
 wire        src1_invert;
 wire        src2_invert;
+wire        src1_31;
+wire        src2_31;
 wire [32:0] cin;
 wire [1:0]  operation;
-wire [31:0] real_result;
 
 // Meaning of signal `ALU_control`
 // And  0000    a &  b
@@ -31,12 +34,14 @@ wire [31:0] real_result;
 // NAnd 1101   ~a | ~b
 // SLT  0111 -> bonus_control
 
-assign less[31:1] = 31'b0;
 assign cin[0] = (ALU_control == 4'b0110 || ALU_control == 4'b0111) ? 1 : 0;
 
 assign src1_invert = (ALU_control == 4'b1100 || ALU_control == 4'b1101) ? 1 : 0;
 assign src2_invert = (ALU_control == 4'b0110 || ALU_control == 4'b1100 ||
                       ALU_control == 4'b1101 || ALU_control == 4'b0111) ? 1 : 0;
+assign src1_31 = src1[31] ^ src1_invert;
+assign src2_31 = src2[31] ^ src2_invert;
+
 
 assign operation = ((ALU_control == 4'b0000 || ALU_control == 4'b1100) ? 2'b00 // &
                  : ((ALU_control == 4'b0001 || ALU_control == 4'b1101) ? 2'b01 // |
@@ -52,30 +57,41 @@ assign operation = ((ALU_control == 4'b0000 || ALU_control == 4'b1100) ? 2'b00 /
 // Set Not Equal   100  !(a + b' = 0)
 
 assign overflow = cin[32] ^ cin[31];
-assign real_zero = (real_result == 32'b0);
-assign zero = (result == 32'b0);
+assign real_zero = (result == 32'b0);
 assign cout = (ALU_control == 4'b0010 || ALU_control == 4'b0110) ? cin[32] : 0;
+assign equal = (src1 == src2);
 
-assign less[0] = ((bonus_control == 3'b000 &&   real_result[31] == 1)                ? 1
-               : ((bonus_control == 3'b001 &&  (real_result[31] == 0 && ~real_zero)) ? 1
-               : ((bonus_control == 3'b010 && !(real_result[31] == 0 && ~real_zero)) ? 1
-               : ((bonus_control == 3'b011 &&  !real_result[31] == 1)                ? 1
-               : ((bonus_control == 3'b110 &&   real_zero)                           ? 1
-               : ((bonus_control == 3'b100 &&  ~real_zero)                           ? 1
-               :   0))))));
+assign real_less = (src1_31 ^ src2_31 ^ cin[31]) | (src1_31 && src2_31 && !cin[31]);
+assign less = ((bonus_control == 3'b000 &&    real_less)            ? 1
+            : ((bonus_control == 3'b001 &&  (!real_less && !equal)) ? 1
+            : ((bonus_control == 3'b010 && !(!real_less && !equal)) ? 1
+            : ((bonus_control == 3'b011 &&   !real_less)            ? 1
+            : ((bonus_control == 3'b110 &&    equal)                ? 1
+            : ((bonus_control == 3'b100 &&   !equal)                ? 1
+            :   0))))));
 
+alu_single alu_single_ins_0 (
+	.src1(src1[0]),
+	.src2(src2[0]),
+	.less(less),
+	.src1_invert(src1_invert),
+	.src2_invert(src2_invert),
+	.cin(cin[0]),
+	.operation(operation),
+	.result(result[0]),
+	.cout(cin[1])
+);
 generate
 	genvar i;
-	for (i = 0; i < 32; i = i + 1) begin:alu_single_group
+	for (i = 1; i < 32; i = i + 1) begin:alu_single_group
 		alu_single alu_single_ins (
 			.src1(src1[i]),
 			.src2(src2[i]),
-			.less(less[i]),
+			.less(0),
 			.src1_invert(src1_invert),
 			.src2_invert(src2_invert),
 			.cin(cin[i]),
 			.operation(operation),
-			.real_result(real_result[i]),
 			.result(result[i]),
 			.cout(cin[i+1])
 		);
