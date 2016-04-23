@@ -16,8 +16,8 @@ module MUX_2to1(
                data_o
                );
 
-parameter size = 32;			   
-			
+parameter size = 32;               
+            
 //I/O ports               
 input   [size-1:0] data0_i;          
 input   [size-1:0] data1_i;
