@@ -39,15 +39,15 @@ reg            Branch_o;
 
 //Main function
 always @(*) begin
-    RegWrite_o <= (instr_op_i == 0 || instr_op_i == 35); // R-type or Load -> nead to write result to some register
-    ALU_op_o   <= (instr_op_i == 35 || instr_op_i == 43) ? 2 : // Load or Store -> add
+    RegWrite_o = (instr_op_i == 0 || instr_op_i == 35 || instr_op_i == 8 || instr_op_i == 9); // R-type or Load -> nead to write result to some register
+    ALU_op_o   = (instr_op_i == 35 || instr_op_i == 43) ? 2 : // Load or Store -> add
                   (instr_op_i == 4 ? 6 : // Branch -> sub
                   (instr_op_i == 8 ? 2 : // ADDI -> add
                   (instr_op_i == 9 ? 6 : // SLTIU -> sub
                   4'b1111))); // Else -> check with funct in instruction
-    ALUSrc_o   <= (instr_op_i == 35 || instr_op_i == 43); // Load or Store -> multiplexer selects address as the second ALU source
-    RegDst_o   <= (instr_op_i == 0); // R-type -> multiplexer selects [15:11] as the register to write to
-    Branch_o   <= (instr_op_i == 4); // Branch
+    ALUSrc_o   = (instr_op_i == 35 || instr_op_i == 43 || instr_op_i == 8 || instr_op_i == 9); // Load or Store -> multiplexer selects address as the second ALU source
+    RegDst_o   = (instr_op_i == 0); // R-type -> multiplexer selects [15:11] as the register to write to
+    Branch_o   = (instr_op_i == 4); // Branch
 end
 
 endmodule

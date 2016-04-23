@@ -60,7 +60,6 @@ always @(  posedge clk_i  ) begin // removed "posedge rst_i or" for normal synth
             Reg_File[RDaddr_i] <= Reg_File[RDaddr_i];
     end
 end
-
 endmodule     
 
 
