@@ -34,6 +34,7 @@ wire          Branch;
 wire [4-1:0]  ALUCtrl;
 wire          Zero;
 wire          BranchSel;
+wire          KeepSign;
 
 wire [5-1:0]  reg_write;
 wire [32-1:0] reg_data1;
@@ -97,10 +98,13 @@ ALU_Ctrl AC(
         .ALUOp_i(ALUOp),   
         .ALUCtrl_o(ALUCtrl) 
         );
-    
+
+assign keep_sign = inst[31:26] == 9 ? 0 : 1;
+
 Sign_Extend SE(
         .data_i(inst[15:0]),
-        .data_o(data_ext)
+        .data_o(data_ext),
+        .keep_sign(keep_sign)
         );
 
 MUX_2to1 #(.size(32)) Mux_ALUSrc(
