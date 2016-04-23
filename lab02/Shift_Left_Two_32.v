@@ -15,6 +15,8 @@ input [32-1:0] data_i;
 output [32-1:0] data_o;
 
 //shift left 2
+assign data_o[0] = 0;
+assign data_o[1] = 0;
 assign data_o[2] = data_i[0];
 assign data_o[3] = data_i[1];
 assign data_o[4] = data_i[2];
