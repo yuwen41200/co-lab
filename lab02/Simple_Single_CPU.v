@@ -18,7 +18,7 @@ input         clk_i;
 input         rst_i;
 
 //Internal Signles
-wire [32-1:0] addr_i;
+wire [32-1:0] addr_nxt;
 wire [32-1:0] addr;
 wire [32-1:0] addr_nxt1;
 wire [32-1:0] addr_nxt2;
@@ -43,11 +43,12 @@ wire [32-1:0] reg_data2;
 wire [32-1:0] data_ext;
 wire [32-1:0] res_alu;
 
+
 //Greate componentes
 ProgramCounter PC(
         .clk_i(clk_i),      
         .rst_i(rst_i),     
-        .pc_in_i(addr_i) ,   
+        .pc_in_i(addr_nxt) ,   
         .pc_out_o(addr) 
         );
     
@@ -128,17 +129,21 @@ Adder Adder2(
         .sum_o(addr_nxt2)      
         );
         
-assign BranchSel = Branch & Zero;
+assign BranchSel = Branch && Zero;
         
 MUX_2to1 #(.size(32)) Mux_PC_Source(
         .data0_i(addr_nxt1),
         .data1_i(addr_nxt2),
         .select_i(BranchSel),
-        .data_o(addr_i)
+        .data_o(addr_nxt)
         );    
 
-always @(res_alu) begin
-    $display("%d ", res_alu);
+
+always @(*) begin
+    // $display("%b", inst);
+    // $display("addr_nxt1 = %d, addr_nxt2 = %d, addr = %d, addr_nxt = %d", addr_nxt1, addr_nxt2, addr, addr_nxt);
+    $display("%b", RegWrite);
+    $display("%d %d => %d ", reg_data1, reg_data2, res_alu);
 end
 
 endmodule

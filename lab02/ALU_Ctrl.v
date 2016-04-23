@@ -30,15 +30,15 @@ reg        [4-1:0] ALUCtrl_o;
 //Select exact operation
 always @(*) begin
     if (ALUOp_i != 4'b1111)
-        ALUCtrl_o <= ALUOp_i;
+        ALUCtrl_o = ALUOp_i;
     else begin
         case (funct_i)
-            32:      ALUCtrl_o <= 2; // ADD
-            34:      ALUCtrl_o <= 6; // SUB
-            36:      ALUCtrl_o <= 0; // AND
-            37:      ALUCtrl_o <= 1; // OR
-            42:      ALUCtrl_o <= 4; // SLT
-            default: ALUCtrl_o <= 4'b1111;
+            32:      ALUCtrl_o = 2; // ADD
+            34:      ALUCtrl_o = 6; // SUB
+            36:      ALUCtrl_o = 0; // AND
+            37:      ALUCtrl_o = 1; // OR
+            42:      ALUCtrl_o = 4; // SLT
+            default: ALUCtrl_o = 4'b1111;
         endcase
     end
 end
