@@ -37,7 +37,7 @@ always @(*) begin
             34:      ALUCtrl_o = 6; // SUB
             36:      ALUCtrl_o = 0; // AND
             37:      ALUCtrl_o = 1; // OR
-            42:      ALUCtrl_o = 4; // SLT
+            42:      ALUCtrl_o = 7; // SLT
             default: ALUCtrl_o = 4'b1111;
         endcase
     end

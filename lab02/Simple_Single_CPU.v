@@ -140,7 +140,7 @@ MUX_2to1 #(.size(32)) Mux_PC_Source(
 
 
 always @(*) begin
-    // $display("%b", inst);
+    $display("%b", inst);
     // $display("addr_nxt1 = %d, addr_nxt2 = %d, addr = %d, addr_nxt = %d", addr_nxt1, addr_nxt2, addr, addr_nxt);
     $display("%b", RegWrite);
     $display("%d %d => %d ", reg_data1, reg_data2, res_alu);
