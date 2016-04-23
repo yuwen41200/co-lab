@@ -18,98 +18,128 @@ input         clk_i;
 input         rst_i;
 
 //Internal Signles
+wire [32-1:0] addr_i;
+wire [32-1:0] addr;
+wire [32-1:0] addr_nxt1;
+wire [32-1:0] addr_nxt2;
+wire [32-1:0] addr_shift;
 
+wire [32-1:0] inst;
+
+wire          RegWrite;
+wire [4-1:0]  ALUOp;
+wire          ALUSrc;
+wire          RegDst;
+wire          Branch;
+wire [4-1:0]  ALUCtrl;
+wire          Zero;
+wire          BranchSel;
+
+wire [5-1:0]  reg_write;
+wire [32-1:0] reg_data1;
+wire [32-1:0] reg_data2_i;
+wire [32-1:0] reg_data2;
+
+wire [32-1:0] data_ext;
+wire [32-1:0] res_alu;
 
 //Greate componentes
 ProgramCounter PC(
-       .clk_i(clk_i),      
-       .rst_i (rst_i),     
-        .pc_in_i() ,   
-        .pc_out_o() 
+        .clk_i(clk_i),      
+        .rst_i(rst_i),     
+        .pc_in_i(addr_i) ,   
+        .pc_out_o(addr) 
         );
     
 Adder Adder1(
-        .src1_i(),     
-        .src2_i(),     
-        .sum_o()    
+        .src1_i(4),     
+        .src2_i(addr),     
+        .sum_o(addr_nxt1)    
         );
     
 Instr_Memory IM(
-        .pc_addr_i(),  
-        .instr_o()    
+        .pc_addr_i(addr),  
+        .instr_o(inst)    
+        );
+        
+Decoder Decoder(
+        .instr_op_i(inst[31:26]), 
+        .RegWrite_o(RegWrite), 
+        .ALU_op_o(ALUOp),   
+        .ALUSrc_o(ALUSrc),   
+        .RegDst_o(RegDst),   
+        .Branch_o(Branch)   
         );
 
+
 MUX_2to1 #(.size(5)) Mux_Write_Reg(
-        .data0_i(),
-        .data1_i(),
-        .select_i(),
-        .data_o()
+        .data0_i(inst[20:16]),
+        .data1_i(inst[15:11]),
+        .select_i(RegDst),
+        .data_o(reg_write)
         );    
         
 Reg_File RF(
-        .clk_i(),      
-        .rst_i() ,     
-        .RSaddr_i() ,  
-        .RTaddr_i() ,  
-        .RDaddr_i() ,  
-        .RDdata_i()  , 
-        .RegWrite_i (),
-        .RSdata_o() ,  
-        .RTdata_o()   
+        .clk_i(clk_i),      
+        .rst_i(rst_i),     
+        .RSaddr_i(inst[25:21]),  
+        .RTaddr_i(inst[20:16]),  
+        .RDaddr_i(reg_write),  
+        .RDdata_i(res_alu), 
+        .RegWrite_i(RegWrite),
+        .RSdata_o(reg_data1),  
+        .RTdata_o(reg_data2_i)   
         );
     
-Decoder Decoder(
-        .instr_op_i(), 
-        .RegWrite_o(), 
-        .ALU_op_o(),   
-        .ALUSrc_o(),   
-        .RegDst_o(),   
-        .Branch_o()   
-        );
-
 ALU_Ctrl AC(
-        .funct_i(),   
-        .ALUOp_i(),   
-        .ALUCtrl_o() 
+        .funct_i(inst[5:0]),   
+        .ALUOp_i(ALUOp),   
+        .ALUCtrl_o(ALUCtrl) 
         );
     
 Sign_Extend SE(
-        .data_i(),
-        .data_o()
+        .data_i(inst[15:0]),
+        .data_o(data_ext)
         );
 
 MUX_2to1 #(.size(32)) Mux_ALUSrc(
-        .data0_i(),
-        .data1_i(),
-        .select_i(),
-        .data_o()
+        .data0_i(reg_data2_i),
+        .data1_i(data_ext),
+        .select_i(ALUSrc),
+        .data_o(reg_data2)
         );    
         
 ALU ALU(
-        .src1_i(),
-        .src2_i(),
-        .ctrl_i(),
-        .result_o(),
-        .zero_o()
+        .src1_i(reg_data1),
+        .src2_i(reg_data2),
+        .ctrl_i(ALUCtrl),
+        .result_o(res_alu),
+        .zero_o(Zero)
         );
+
+Shift_Left_Two_32 Shifter(
+        .data_i(data_ext),
+        .data_o(addr_shift)
+        );    
         
 Adder Adder2(
-        .src1_i(),     
-        .src2_i(),     
-        .sum_o()      
+        .src1_i(addr_nxt1),     
+        .src2_i(addr_shift),     
+        .sum_o(addr_nxt2)      
         );
         
-Shift_Left_Two_32 Shifter(
-        .data_i(),
-        .data_o()
-        );         
+assign BranchSel = Branch & Zero;
         
 MUX_2to1 #(.size(32)) Mux_PC_Source(
-        .data0_i(),
-        .data1_i(),
-        .select_i(),
-        .data_o()
+        .data0_i(addr_nxt1),
+        .data1_i(addr_nxt2),
+        .select_i(BranchSel),
+        .data_o(addr_i)
         );    
+
+always @(res_alu) begin
+    $display("%d ", res_alu);
+end
 
 endmodule
           
