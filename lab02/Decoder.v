@@ -39,15 +39,17 @@ reg            Branch_o;
 
 //Main function
 always @(*) begin
-    RegWrite_o = (instr_op_i == 0 || instr_op_i == 35 || instr_op_i == 8 || instr_op_i == 9); // R-type or Load -> nead to write result to some register
+    RegWrite_o = (instr_op_i == 0 || instr_op_i == 35 || instr_op_i == 8 || instr_op_i == 9 || instr_op_i == 15 || instr_op_i == 13); // R-type, Load, ADDI, SLTIU, LUI, ORI -> nead to write result to some register
     ALU_op_o   = (instr_op_i == 35 || instr_op_i == 43) ? 2 : // Load or Store -> add
-                  (instr_op_i == 4 ? 6 : // Branch -> sub
-                  (instr_op_i == 8 ? 2 : // ADDI -> add
-                  (instr_op_i == 9 ? 7 : // SLTIU -> lt
-                  4'b1111))); // Else -> check with funct in instruction
-    ALUSrc_o   = (instr_op_i == 35 || instr_op_i == 43 || instr_op_i == 8 || instr_op_i == 9); // Load or Store -> multiplexer selects address as the second ALU source
+                 (instr_op_i == 4 ? 6 : // Branch -> sub
+                 (instr_op_i == 8 ? 2 : // ADDI -> add
+                 (instr_op_i == 9 ? 7 : // SLTIU -> lt
+                 (instr_op_i == 13 ? 1 : // ORI -> or
+                 (instr_op_i == 15 ? 15: // LUI -> Left shift immediate by 16
+                 4'b1111))))); // Else -> check with funct in instruction
+    ALUSrc_o   = (instr_op_i == 35 || instr_op_i == 43 || instr_op_i == 8 || instr_op_i == 9 || instr_op_i == 15 || instr_op_i == 13); // Load, Store, ADDI, SLTIU, LUI, ORI -> multiplexer selects [15:0] as the second ALU source
     RegDst_o   = (instr_op_i == 0); // R-type -> multiplexer selects [15:11] as the register to write to
-    Branch_o   = (instr_op_i == 4); // Branch
+    Branch_o   = (instr_op_i == 4 || instr_op_i == 5); // BEQ, BNE
 end
 
 endmodule

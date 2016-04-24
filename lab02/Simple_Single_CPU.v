@@ -35,8 +35,11 @@ wire [4-1:0]  ALUCtrl;
 wire          Zero;
 wire          BranchSel;
 wire          KeepSign;
+wire          RegRead1;
+wire          TakeBranch;
 
 wire [5-1:0]  reg_write;
+wire [32-1:0] reg_data1_i;
 wire [32-1:0] reg_data1;
 wire [32-1:0] reg_data2_i;
 wire [32-1:0] reg_data2;
@@ -73,14 +76,13 @@ Decoder Decoder(
         .Branch_o(Branch)   
         );
 
-
 MUX_2to1 #(.size(5)) Mux_Write_Reg(
         .data0_i(inst[20:16]),
         .data1_i(inst[15:11]),
         .select_i(RegDst),
         .data_o(reg_write)
         );    
-        
+
 Reg_File RF(
         .clk_i(clk_i),      
         .rst_i(rst_i),     
@@ -89,7 +91,7 @@ Reg_File RF(
         .RDaddr_i(reg_write),  
         .RDdata_i(res_alu), 
         .RegWrite_i(RegWrite),
-        .RSdata_o(reg_data1),  
+        .RSdata_o(reg_data1_i),  
         .RTdata_o(reg_data2_i)   
         );
     
@@ -99,13 +101,15 @@ ALU_Ctrl AC(
         .ALUCtrl_o(ALUCtrl) 
         );
 
-assign keep_sign = inst[31:26] == 9 ? 0 : 1;
+assign keep_sign = inst[31:26] == 9 || inst[31:26] == 13 ? 0 : 1;
 
 Sign_Extend SE(
         .data_i(inst[15:0]),
         .data_o(data_ext),
         .keep_sign(keep_sign)
         );
+
+assign reg_data1 = inst[31:26] == 0 && inst[5:0] == 3 ? inst[10:6] : reg_data1_i;
 
 MUX_2to1 #(.size(32)) Mux_ALUSrc(
         .data0_i(reg_data2_i),
@@ -132,8 +136,9 @@ Adder Adder2(
         .src2_i(addr_shift),     
         .sum_o(addr_nxt2)      
         );
-        
-assign BranchSel = Branch && Zero;
+
+assign TakeBranch = inst[31:26] == 4 ? Zero : !Zero; // BEQ, BNE
+assign BranchSel = Branch && TakeBranch;
         
 MUX_2to1 #(.size(32)) Mux_PC_Source(
         .data0_i(addr_nxt1),
@@ -147,6 +152,7 @@ always @(*) begin
     $display("%b", inst);
     // $display("addr_nxt1 = %d, addr_nxt2 = %d, addr = %d, addr_nxt = %d", addr_nxt1, addr_nxt2, addr, addr_nxt);
     $display("%b", RegWrite);
+    // $display("%b %b", RegRead1, reg_read1);
     $display("%d %d => %d ", reg_data1, reg_data2, res_alu);
 end
 
