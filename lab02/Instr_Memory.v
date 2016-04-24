@@ -36,7 +36,7 @@ end
 initial begin
     for ( i=0; i<32; i=i+1 )
         Instr_Mem[i] = 32'b0;
-    $readmemb("CO_P2_test_data2.txt", Instr_Mem);  //Read instruction from "CO_P2_test_data1.txt"   
+    $readmemb("CO_P2_test_data1.txt", Instr_Mem);  //Read instruction from "CO_P2_test_data1.txt"   
         
 end
 endmodule
