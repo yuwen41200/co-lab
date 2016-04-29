@@ -41,15 +41,15 @@ assign zero_o = (result_o == 0);
 //Main function
 always @(*) begin
     case (ctrl_i)
-        0: result_o <= src1_i & src2_i;
-        1: result_o <= src1_i | src2_i;
-        2: result_o <= src1_i + src2_i;
-        6: result_o <= src1_i - src2_i;
-        7: result_o <= src1_i < src2_i ? 1 : 0;
-        12: result_o <= ~(src1_i | src2_i);
-        14: result_o <= src2_i_signed >>> src1_i_signed;
-        15: result_o <= src2_i << 16;
-        default: result_o <= 0;
+        0: result_o = src1_i & src2_i;
+        1: result_o = src1_i | src2_i;
+        2: result_o = src1_i + src2_i;
+        6: result_o = src1_i - src2_i;
+        7: result_o = src1_i < src2_i ? 1 : 0;
+        12: result_o = ~(src1_i | src2_i);
+        14: result_o = src2_i_signed >>> src1_i_signed;
+        15: result_o = src2_i << 16;
+        default: result_o = 0;
     endcase
 end
 
