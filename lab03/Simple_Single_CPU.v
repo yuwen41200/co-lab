@@ -20,9 +20,11 @@ input         rst_i;
 //Internal Signles
 wire [32-1:0] addr_nxt;
 wire [32-1:0] addr;
-wire [32-1:0] addr_nxt1;
-wire [32-1:0] addr_nxt2;
+wire [32-1:0] addr_branch_nxt1;
+wire [32-1:0] addr_branch_nxt2;
+wire [32-1:0] addr_branch_nxt;
 wire [32-1:0] addr_shift;
+wire [32-1:0] addr_jump;
 
 wire [32-1:0] inst;
 
@@ -31,6 +33,10 @@ wire [4-1:0]  ALUOp;
 wire          ALUSrc;
 wire          RegDst;
 wire          Branch;
+wire          MemToReg;
+wire          MemRead;
+wire          MemWrite;
+wire          Jump;
 wire [4-1:0]  ALUCtrl;
 wire          Zero;
 wire          BranchSel;
@@ -48,6 +54,10 @@ wire [32-1:0] data_ext;
 wire [32-1:0] res_alu;
 
 
+wire [32-1:0] mem_data;
+wire [32-1:0] result;
+
+
 //Greate componentes
 ProgramCounter PC(
         .clk_i(clk_i),      
@@ -59,11 +69,11 @@ ProgramCounter PC(
 Adder Adder1(
         .src1_i(4),     
         .src2_i(addr),     
-        .sum_o(addr_nxt1)    
+        .sum_o(addr_branch_nxt1)    
         );
     
 Instr_Memory IM(
-        .pc_addr_i(addr),  
+        .addr_i(addr),  
         .instr_o(inst)    
         );
         
@@ -73,7 +83,11 @@ Decoder Decoder(
         .ALU_op_o(ALUOp),   
         .ALUSrc_o(ALUSrc),   
         .RegDst_o(RegDst),   
-        .Branch_o(Branch)   
+        .Branch_o(Branch),
+        .MemToReg_o(MemToReg),
+        .MemRead_o(MemRead),
+        .MemWrite_o(MemWrite),
+        .Jump_o(Jump)
         );
 
 MUX_2to1 #(.size(5)) Mux_Write_Reg(
@@ -89,7 +103,7 @@ Reg_File RF(
         .RSaddr_i(inst[25:21]),  
         .RTaddr_i(inst[20:16]),  
         .RDaddr_i(reg_write),  
-        .RDdata_i(res_alu), 
+        .RDdata_i(result), 
         .RegWrite_i(RegWrite),
         .RSdata_o(reg_data1_i),  
         .RTdata_o(reg_data2_i)   
@@ -116,7 +130,7 @@ MUX_2to1 #(.size(32)) Mux_ALUSrc(
         .data1_i(data_ext),
         .select_i(ALUSrc),
         .data_o(reg_data2)
-        );    
+        );
         
 ALU ALU(
         .src1_i(reg_data1),
@@ -126,31 +140,55 @@ ALU ALU(
         .zero_o(Zero)
         );
 
+Data_Memory Data_Memory(
+        .clk_i(clk_i),
+        .addr_i(res_alu),
+        .data_i(reg_data2_i),
+        .MemRead_i(MemRead),
+        .MemWrite_i(MemWrite),
+        .data_o(mem_data)
+       );
+
+MUX_2to1 #(.size(32)) Mux_Result(
+        .data0_i(res_alu),
+        .data1_i(mem_data),
+        .select_i(MemToReg),
+        .data_o(result)
+        );
+
 Shift_Left_Two_32 Shifter(
         .data_i(data_ext),
         .data_o(addr_shift)
         );    
         
 Adder Adder2(
-        .src1_i(addr_nxt1),     
+        .src1_i(addr_branch_nxt1),     
         .src2_i(addr_shift),     
-        .sum_o(addr_nxt2)      
+        .sum_o(addr_branch_nxt2)      
         );
 
 assign TakeBranch = inst[31:26] == 4 ? Zero : !Zero; // BEQ, BNE
 assign BranchSel = Branch && TakeBranch;
         
-MUX_2to1 #(.size(32)) Mux_PC_Source(
-        .data0_i(addr_nxt1),
-        .data1_i(addr_nxt2),
+MUX_2to1 #(.size(32)) Mux_Addr_Branch(
+        .data0_i(addr_branch_nxt1),
+        .data1_i(addr_branch_nxt2),
         .select_i(BranchSel),
-        .data_o(addr_nxt)
+        .data_o(addr_branch_nxt)
         );    
 
+assign addr_jump = inst[25:0] << 2;
+
+MUX_2to1 #(.size(32)) Mux_PC_Source(
+        .data0_i(addr_branch_nxt),
+        .data1_i(addr_jump),
+        .select_i(Jump),
+        .data_o(addr_nxt)
+        );
 
 always @(*) begin
     $display("%b", inst);
-    // $display("addr_nxt1 = %d, addr_nxt2 = %d, addr = %d, addr_nxt = %d", addr_nxt1, addr_nxt2, addr, addr_nxt);
+    // $display("addr_branch_nxt1 = %d, addr_branch_nxt2 = %d, addr = %d, addr_branch_nxt = %d", addr_branch_nxt1, addr_branch_nxt2, addr, addr_branch_nxt);
     $display("%b", RegWrite);
     // $display("%b %b", RegRead1, reg_read1);
     $display("%d %d => %d ", reg_data1, reg_data2, res_alu);

@@ -35,6 +35,7 @@ always @(*) begin
         case (funct_i)
             3:       ALUCtrl_o = 14; // SRA
             7:       ALUCtrl_o = 14; // SRAV
+            24:      ALUCtrl_o = 3; // MUL
             32:      ALUCtrl_o = 2; // ADD
             34:      ALUCtrl_o = 6; // SUB
             36:      ALUCtrl_o = 0; // AND
