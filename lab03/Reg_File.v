@@ -51,7 +51,7 @@ always @(  posedge clk_i  ) begin // removed "posedge rst_i or" for normal synth
         Reg_File[16] <= 0; Reg_File[17] <= 0; Reg_File[18] <= 0; Reg_File[19] <= 0;      
         Reg_File[20] <= 0; Reg_File[21] <= 0; Reg_File[22] <= 0; Reg_File[23] <= 0;
         Reg_File[24] <= 0; Reg_File[25] <= 0; Reg_File[26] <= 0; Reg_File[27] <= 0;
-        Reg_File[28] <= 0; Reg_File[29] <= 32-1; Reg_File[30] <= 0; Reg_File[31] <= 0; // 29 = stack pointer, initiate to top
+        Reg_File[28] <= 0; Reg_File[29] <= 124; Reg_File[30] <= 0; Reg_File[31] <= 0; // 29 = stack pointer, initiate to top
     end
     else begin
         if(RegWrite_i) 

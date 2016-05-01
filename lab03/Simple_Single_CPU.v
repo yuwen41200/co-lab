@@ -10,12 +10,8 @@
 //--------------------------------------------------------------------------------
 //Notes:
 //. jal (opcode = 3)
-//-- Saves reg[31] to mem[reg[29]]
-//-- Saves PC(addr)+4 to reg[31]
-//-- reg[29] -= 4
+//. RegWrite 31
 //. jr ra
-//-- jr rs 'reg[31]
-//-- reg[29] += 4 'if (rs == 31)
 //--------------------------------------------------------------------------------
 module Simple_Single_CPU(
         clk_i,
@@ -33,6 +29,8 @@ wire [32-1:0] addr_branch_nxt1;
 wire [32-1:0] addr_branch_nxt2;
 wire [32-1:0] addr_branch_nxt;
 wire [32-1:0] addr_shift;
+wire [32-1:0] addr_jump1;
+wire [32-1:0] addr_jump2;
 wire [32-1:0] addr_jump;
 
 wire [32-1:0] inst;
@@ -45,6 +43,7 @@ wire          Branch;
 wire          MemToReg;
 wire          MemRead;
 wire          MemWrite;
+wire          Jump_tmp;
 wire          Jump;
 wire [4-1:0]  ALUCtrl;
 wire          Zero;
@@ -52,12 +51,16 @@ wire          BranchSel;
 wire          KeepSign;
 wire          RegRead1;
 wire          TakeBranch;
+wire          IsJR; // Jump to register ?
 
+wire [5-1:0]  reg_write1;
+wire [5-1:0]  reg_write2;
 wire [5-1:0]  reg_write;
 wire [32-1:0] reg_data1_i;
 wire [32-1:0] reg_data1;
 wire [32-1:0] reg_data2_i;
 wire [32-1:0] reg_data2;
+wire [32-1:0] data_write;
 
 wire [32-1:0] data_ext;
 wire [32-1:0] res_alu;
@@ -96,15 +99,29 @@ Decoder Decoder(
         .MemToReg_o(MemToReg),
         .MemRead_o(MemRead),
         .MemWrite_o(MemWrite),
-        .Jump_o(Jump)
+        .Jump_o(Jump_tmp)
         );
+        
+assign IsJR = (inst[31:26] == 0 && inst[5:0] == 8);
+assign Jump = IsJR ? 1 : Jump_tmp;
 
-MUX_2to1 #(.size(5)) Mux_Write_Reg(
+MUX_2to1 #(.size(5)) Mux_Write_Reg1(
         .data0_i(inst[20:16]),
         .data1_i(inst[15:11]),
         .select_i(RegDst),
+        .data_o(reg_write1)
+        );
+
+assign reg_write2 = 31;
+
+MUX_2to1 #(.size(5)) Mux_Write_Reg(
+        .data0_i(reg_write1),
+        .data1_i(reg_write2),
+        .select_i(inst[31:26] == 3), // JAL
         .data_o(reg_write)
-        );    
+        );
+
+assign data_write = inst[31:26] == 3 ? addr_branch_nxt1 : result;
 
 Reg_File RF(
         .clk_i(clk_i),      
@@ -112,7 +129,7 @@ Reg_File RF(
         .RSaddr_i(inst[25:21]),  
         .RTaddr_i(inst[20:16]),  
         .RDaddr_i(reg_write),  
-        .RDdata_i(result), 
+        .RDdata_i(data_write), 
         .RegWrite_i(RegWrite),
         .RSdata_o(reg_data1_i),  
         .RTdata_o(reg_data2_i)   
@@ -186,7 +203,15 @@ MUX_2to1 #(.size(32)) Mux_Addr_Branch(
         .data_o(addr_branch_nxt)
         );    
 
-assign addr_jump = inst[25:0] << 2; // j, jal
+assign addr_jump1 = inst[25:0] << 2; // j, jal
+assign addr_jump2 = reg_data1_i; // jr
+
+MUX_2to1 #(.size(32)) Mux_Jump_Addr(
+        .data0_i(addr_jump1),
+        .data1_i(addr_jump2),
+        .select_i(inst[31:26] == 0),
+        .data_o(addr_jump)
+        );
 
 MUX_2to1 #(.size(32)) Mux_PC_Source(
         .data0_i(addr_branch_nxt),
@@ -198,9 +223,9 @@ MUX_2to1 #(.size(32)) Mux_PC_Source(
 always @(*) begin
     $display("%b", inst);
     // $display("addr_branch_nxt1 = %d, addr_branch_nxt2 = %d, addr = %d, addr_branch_nxt = %d", addr_branch_nxt1, addr_branch_nxt2, addr, addr_branch_nxt);
-    $display("%b", RegWrite);
+    // $display("%b", RegWrite);
     // $display("%b %b", RegRead1, reg_read1);
-    $display("%d %d => %d ", reg_data1, reg_data2, res_alu);
+    // $display("%d %d => %d ", reg_data1, reg_data2, res_alu);
 end
 
 endmodule

@@ -51,7 +51,7 @@ reg            Jump_o;
 
 //Main function
 always @(*) begin
-    RegWrite_o = (instr_op_i == 0 || instr_op_i == 35 || instr_op_i == 8 || instr_op_i == 9 || instr_op_i == 15 || instr_op_i == 13); // R-type, Load, ADDI, SLTIU, LUI, ORI -> nead to write result to some register
+    RegWrite_o = (instr_op_i == 0 || instr_op_i == 35 || instr_op_i == 8 || instr_op_i == 9 || instr_op_i == 15 || instr_op_i == 13 || instr_op_i == 3); // R-type, Load, ADDI, SLTIU, LUI, ORI, JAL -> nead to write result to some register
     ALU_op_o   = (instr_op_i == 35 || instr_op_i == 43) ? 2 : // Load or Store -> add
                  (instr_op_i == 4 ? 6 : // Branch -> sub
                  (instr_op_i == 8 ? 2 : // ADDI -> add
