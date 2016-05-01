@@ -47,6 +47,7 @@ wire          Jump_tmp;
 wire          Jump;
 wire [4-1:0]  ALUCtrl;
 wire          Zero;
+wire          Less;
 wire          BranchSel;
 wire          KeepSign;
 wire          RegRead1;
@@ -163,7 +164,8 @@ ALU ALU(
         .src2_i(reg_data2),
         .ctrl_i(ALUCtrl),
         .result_o(res_alu),
-        .zero_o(Zero)
+        .zero_o(Zero),
+        .less_o(Less)
         );
 
 Data_Memory Data_Memory(
@@ -193,7 +195,10 @@ Adder Adder2(
         .sum_o(addr_branch_nxt2)      
         );
 
-assign TakeBranch = inst[31:26] == 4 ? Zero : !Zero; // BEQ, BNE
+assign TakeBranch = inst[31:26] == 4 ? Zero :             // BEQ
+                   (inst[31:26] == 5 ? !Zero :            // BNE
+                   (inst[31:26] == 6 ? (Less || Zero) :   // BLE
+                    0));
 assign BranchSel = Branch && TakeBranch;
         
 MUX_2to1 #(.size(32)) Mux_Addr_Branch(
@@ -204,7 +209,7 @@ MUX_2to1 #(.size(32)) Mux_Addr_Branch(
         );    
 
 assign addr_jump1 = inst[25:0] << 2; // j, jal
-assign addr_jump2 = reg_data1_i; // jr
+assign addr_jump2 = reg_data1_i;     // jr
 
 MUX_2to1 #(.size(32)) Mux_Jump_Addr(
         .data0_i(addr_jump1),

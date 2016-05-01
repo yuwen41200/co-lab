@@ -14,7 +14,8 @@ module ALU(
     src2_i,
     ctrl_i,
     result_o,
-    zero_o
+    zero_o,
+    less_o
     );
      
 //I/O ports
@@ -24,6 +25,7 @@ input [4-1:0]        ctrl_i;
 
 output [32-1:0]      result_o;
 output               zero_o;
+output               less_o;
 
 //Internal signals
 wire signed [32-1:0] src1_i_signed;
@@ -35,6 +37,7 @@ assign src1_i_signed = src1_i;
 assign src2_i_signed = src2_i;
 
 assign zero_o = (result_o == 0);
+assign less_o = (result_o[31] == 1);
 
 //Parameter
 
@@ -46,7 +49,7 @@ always @(*) begin
         2: result_o = src1_i + src2_i;
         3: result_o = src1_i * src2_i;
         6: result_o = src1_i - src2_i;
-        7: result_o = src1_i < src2_i ? 1 : 0;
+        7: result_o = src1_i_signed < src2_i_signed ? 1 : 0;
         12: result_o = ~(src1_i | src2_i);
         14: result_o = src2_i_signed >>> src1_i_signed;
         15: result_o = src2_i << 16;
