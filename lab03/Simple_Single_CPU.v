@@ -195,10 +195,11 @@ Adder Adder2(
         .sum_o(addr_branch_nxt2)      
         );
 
-assign TakeBranch = inst[31:26] == 4 ? Zero :             // BEQ
+assign TakeBranch = inst[31:26] == 1 ? Less :
+                   (inst[31:26] == 4 ? Zero :             // BEQ
                    (inst[31:26] == 5 ? !Zero :            // BNE
                    (inst[31:26] == 6 ? (Less || Zero) :   // BLE
-                    0));
+                    0)));
 assign BranchSel = Branch && TakeBranch;
         
 MUX_2to1 #(.size(32)) Mux_Addr_Branch(

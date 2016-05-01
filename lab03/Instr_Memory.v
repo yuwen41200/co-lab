@@ -37,7 +37,7 @@ reg		[31:0]		instruction_file	[0:31];
 initial begin
     for ( i=0; i<32; i=i+1 )
 	    instruction_file[i] = 32'b0;
-    $readmemb("test/CO_P3_test_data2.txt", instruction_file);  //Read instruction from "CO_P3_test_data.txt"   
+    $readmemb("test/CO_P3_test_data3.txt", instruction_file);  //Read instruction from "CO_P3_test_data.txt"   
 		
 end
 
