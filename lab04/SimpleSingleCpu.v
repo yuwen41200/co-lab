@@ -57,7 +57,7 @@ Decoder Decoder (
 	.jump_o(jump_temp)
 );
 
-assign instr_jr = (instr[31:26] == 0 && instr[5:0] == 8);
+assign instr_jr = (instr[31:26] == 0 && instr[5:0] == 8); // JR
 assign jump = instr_jr ? 1 : jump_temp;
 
 wire [4:0] write_reg_temp;
@@ -72,7 +72,7 @@ Mux #(.width(5)) MuxForWriteRegTemp (
 wire instr_jal;
 wire [4:0] write_reg;
 
-assign instr_jal = (instr[31:26] == 3);
+assign instr_jal = (instr[31:26] == 3); // JAL
 
 Mux #(.width(5)) MuxForWriteReg (
 	.data0_i(write_reg_temp),
@@ -117,105 +117,113 @@ AluControl AluControl (
 wire keep_sign;
 wire [31:0] data_ext;
 
-assign keep_sign = (instr[31:26] != 9 && instr[31:26] != 13);
+assign keep_sign = (instr[31:26] != 9 && instr[31:26] != 13); // neither SLTIU nor ORI
 
 SignExtend SignExtend (
 	.data_i(instr[15:0]),
-	.data_o(data_ext),
-	.keep_sign(keep_sign)
+	.keep_sign_i(keep_sign),
+	.data_o(data_ext)
 );
 
 wire [31:0] reg_data1;
 wire [31:0] reg_data2;
-wire [32-1:0] addr_branch_nxt2;
-wire [32-1:0] addr_branch_nxt;
-wire [32-1:0] addr_shift;
-wire [32-1:0] addr_jump1;
-wire [32-1:0] addr_jump2;
-wire [32-1:0] addr_jump;
-wire          Zero;
-wire          Less;
-wire          BranchSel;
-wire          TakeBranch;
 
-wire [32-1:0] res_alu;
-wire [32-1:0] mem_data;
+assign reg_data1 = (instr[31:26] == 0 && instr[5:0] == 3) ? instr[10:6] : reg_data1_temp; // SRA
 
-assign reg_data1 = instr[31:26] == 0 && instr[5:0] == 3 ? instr[10:6] : reg_data1_temp;
+Mux #(.width(32)) MuxForRegData2 (
+	.data0_i(reg_data2_temp),
+	.data1_i(data_ext),
+	.select_i(alu_src),
+	.data_o(reg_data2)
+);
 
-Mux #(.width(32)) Mux_ALUSrc(
-		.data0_i(reg_data2_temp),
-		.data1_i(data_ext),
-		.select_i(alu_src),
-		.data_o(reg_data2)
-		);
-		
-ALU ALU(
-		.src1_i(reg_data1),
-		.src2_i(reg_data2),
-		.ctrl_i(alu_ctrl),
-		.result_o(res_alu),
-		.zero_o(Zero),
-		.less_o(Less)
-		);
+wire [31:0] alu_result;
+wire zero;
+wire less;
 
-Data_Memory Data_Memory(
-		.clk_i(clk_i),
-		.addr_i(res_alu),
-		.data_i(reg_data2_temp),
-		.MemRead_i(mem_read),
-		.MemWrite_i(mem_write),
-		.data_o(mem_data)
-	   );
+Alu Alu (
+	.src1_i(reg_data1),
+	.src2_i(reg_data2),
+	.ctrl_i(alu_ctrl),
+	.result_o(alu_result),
+	.zero_o(zero),
+	.less_o(less)
+);
 
-Mux #(.width(32)) Mux_Result(
-		.data0_i(res_alu),
-		.data1_i(mem_data),
-		.select_i(mem_to_reg),
-		.data_o(result)
-		);
+wire [31:0] read_data;
 
-Shift_Left_Two_32 Shifter(
-		.data_i(data_ext),
-		.data_o(addr_shift)
-		);    
-		
-Adder Adder2(
-		.src1_i(addr_plus_four),     
-		.src2_i(addr_shift),     
-		.sum_o(addr_branch_nxt2)      
-		);
+DataMemory DataMemory (
+	.clk_i(clk_i),
+	.addr_i(alu_result),
+	.data_i(reg_data2_temp),
+	.mem_read_i(mem_read),
+	.mem_write_i(mem_write),
+	.data_o(read_data)
+);
 
-assign TakeBranch = instr[31:26] == 1 ? Less :
-				   (instr[31:26] == 4 ? Zero :             // BEQ
-				   (instr[31:26] == 5 ? !Zero :            // BNE
-				   (instr[31:26] == 6 ? (Less || Zero) :   // BLE
-					0)));
-assign BranchSel = branch && TakeBranch;
-		
-Mux #(.width(32)) Mux_Addr_Branch(
-		.data0_i(addr_plus_four),
-		.data1_i(addr_branch_nxt2),
-		.select_i(BranchSel),
-		.data_o(addr_branch_nxt)
-		);    
+Mux #(.width(32)) MuxForResult (
+	.data0_i(alu_result),
+	.data1_i(read_data),
+	.select_i(mem_to_reg),
+	.data_o(result)
+);
 
-assign addr_jump1 = instr[25:0] << 2; // J, JAL
-assign addr_jump2 = reg_data1_temp;     // JR
+wire [31:0] addr_shift;
 
-Mux #(.width(32)) Mux_Jump_Addr(
-		.data0_i(addr_jump1),
-		.data1_i(addr_jump2),
-		.select_i(instr[31:26] == 0),
-		.data_o(addr_jump)
-		);
+Shifter ShifterForBranchAddress (
+	.data_i(data_ext),
+	.data_o(addr_shift)
+);
 
-Mux #(.width(32)) Mux_PC_Source(
-		.data0_i(addr_branch_nxt),
-		.data1_i(addr_jump),
-		.select_i(jump),
-		.data_o(addr_next)
-		);
+wire [31:0] addr_branch_next_temp;
+
+Adder AdderForBranchAddress (
+	.src1_i(addr_plus_four),
+	.src2_i(addr_shift),
+	.sum_o(addr_branch_next_temp)
+);
+
+wire take_branch;
+wire branch_select;
+
+assign take_branch = (instr[31:26] == 1 ? less :           // BLTZ
+                     (instr[31:26] == 4 ? zero :           // BEQ
+                     (instr[31:26] == 5 ? ~zero :          // BNE
+                     (instr[31:26] == 6 ? (less || zero) : // BLE
+                      0))));
+assign branch_select = branch && take_branch;
+
+wire [31:0] addr_branch_next;
+
+Mux #(.width(32)) MuxForAddrBranchNext (
+	.data0_i(addr_plus_four),
+	.data1_i(addr_branch_next_temp),
+	.select_i(branch_select),
+	.data_o(addr_branch_next)
+);
+
+wire [31:0] addr_jump_temp;
+
+Shifter ShifterForJumpAddress (
+	.data_i({6'b0, instr[25:0]}),
+	.data_o(addr_jump_temp)
+);
+
+wire [31:0] addr_jump;
+
+Mux #(.width(32)) MuxForAddrJump (
+	.data0_i(addr_jump_temp), // J or JAL
+	.data1_i(reg_data1_temp), // JR
+	.select_i(instr_jr),
+	.data_o(addr_jump)
+);
+
+Mux #(.width(32)) MuxForAddrNext (
+	.data0_i(addr_branch_next),
+	.data1_i(addr_jump),
+	.select_i(jump),
+	.data_o(addr_next)
+);
 
 always @(*) begin
 	$display("%b", instr);
