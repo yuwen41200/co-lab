@@ -1,4 +1,4 @@
-module #(parameter width = 32) Mux (
+module Mux #(parameter width = 32) (
 	input [width-1:0] data0_i,
 	input [width-1:0] data1_i,
 	input select_i,

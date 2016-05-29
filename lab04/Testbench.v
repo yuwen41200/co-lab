@@ -6,7 +6,6 @@ module TestBench;
 reg clk;
 reg rst;
 integer count;
-integer i;
 
 PipelinedCpu Cpu (
 	.clk_i(clk),

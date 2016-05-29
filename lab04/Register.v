@@ -10,7 +10,7 @@ module Register (
 	output [31:0] rt_data_o
 );
 
-signed reg [31:0] reg_file [0:31];
+reg signed [31:0] reg_file [0:31];
 
 assign rs_data_o = reg_file[rs_addr_i];
 assign rt_data_o = reg_file[rt_addr_i];

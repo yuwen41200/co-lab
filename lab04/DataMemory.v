@@ -46,7 +46,7 @@ assign mem_debug[31] = {mem_file[127], mem_file[126], mem_file[125], mem_file[12
 
 initial begin
 	for (iterator = 0; iterator < 128; iterator = iterator + 1)
-		mem_file[i] = 8'b0;
+		mem_file[iterator] = 8'b0;
 	// Only used in CO_P4_test_3.txt:
 	// mem_file[0] = 8'b0100;
 	// mem_file[4] = 8'b0101;

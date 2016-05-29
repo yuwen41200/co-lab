@@ -2,7 +2,7 @@ module Alu (
 	input [31:0] src1_i,
 	input [31:0] src2_i,
 	input [3:0] ctrl_i,
-	input reg [31:0] result_o,
+	output reg [31:0] result_o,
 	output zero_o,
 	output less_o
 );
