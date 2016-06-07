@@ -1,56 +1,70 @@
-#include <iostream>
-#include <stdio.h>
-#include <math.h>
+#include <cmath>
+#include <cstdio>
 
-using namespace std;
+#define BYTE 1
+#define KIBIBYTE (1024 * BYTE)
 
-struct cache_content{
-	bool v;
-	unsigned int  tag;
+struct cache_content {
+	bool valid;
+	unsigned int tag;
 };
 
-const int K=1024;
-
-double log2( double n )  
-{  
-    // log(n)/log(2) is log2.  
-    return log( n ) / log(double(2));  
-}
-
-
-void simulate(int cache_size, int block_size){
-	unsigned int tag,index,x;
-
+double simulate(int cache_size, int block_size, char *memory_trace) {
 	int offset_bit = (int) log2(block_size);
-	int index_bit = (int) log2(cache_size/block_size);
-	int line= cache_size>>(offset_bit);
+	int index_bit = (int) log2(cache_size / block_size);
+	int cache_line = cache_size >> offset_bit;
 
-	cache_content *cache =new cache_content[line];
-	cout<<"cache line:"<<line<<endl;
+	cache_content *cache = new cache_content[cache_line];
+	printf("cache_line = %02d\n", cache_line);
 
-	for(int j=0;j<line;j++)
-		cache[j].v=false;
-	
-  FILE * fp=fopen("test.txt","r");					//read file
-	
-	while(fscanf(fp,"%x",&x)!=EOF){
-		cout<<hex<<x<<" ";
-		index=(x>>offset_bit)&(line-1);
-		tag=x>>(index_bit+offset_bit);
-		if(cache[index].v && cache[index].tag==tag){
-			cache[index].v=true; 			//hit
-		}
-		else{						
-			cache[index].v=true;			//miss
-			cache[index].tag=tag;
+	for (int i = 0; i < cache_line; ++i)
+		cache[i].valid = false;
+
+	unsigned int address, hit = 0, miss = 0;
+	FILE *fp = fopen(memory_trace, "r");
+
+	while (fscanf(fp, "%x", &address) != EOF) {
+		printf("%#010X\t", address);
+		unsigned int index = (address >> offset_bit) & (cache_line - 1);
+		unsigned int tag = address >> (index_bit + offset_bit);
+
+		if (cache[index].valid && cache[index].tag == tag)
+			printf("hit = %02d\n", ++hit);
+
+		else {
+			cache[index].valid = true;
+			cache[index].tag = tag;
+			printf("miss = %02d\n", ++miss);
 		}
 	}
-	fclose(fp);
 
+	fclose(fp);
 	delete [] cache;
+
+	return miss / (hit + miss) * 100;
 }
-	
-int main(){
-	// Let us simulate 4KB cache with 16B blocks
-	simulate(4*K, 16);
+
+int main() {
+	char *filename;
+	double miss_rate;
+
+	for (int i = 64; i <= 512; i*=2) {
+		for (int j = 4; j <= 32; j*=2) {
+			filename = "ICACHE.txt";
+			miss_rate = simulate(i * BYTE, j * BYTE, filename);
+			printf("cache_size = %03d bytes, ", i);
+			printf("block_size = %02d bytes, ", j);
+			printf("memory_trace = %s, ", filename);
+			printf("miss_rate = %04.1f%%\n", miss_rate);
+
+			filename = "DCACHE.txt";
+			miss_rate = simulate(i * BYTE, j * BYTE, filename);
+			printf("cache_size = %03d bytes, ", i);
+			printf("block_size = %02d bytes, ", j);
+			printf("memory_trace = %s, ", filename);
+			printf("miss_rate = %04.1f%%\n", miss_rate);
+		}
+	}
+
+	return 0;
 }
