@@ -1,3 +1,8 @@
+/**
+ * Please compile with C++11.
+ * It's already 2016 now.
+ */
+
 #include <cmath>
 #include <cstdio>
 
@@ -48,16 +53,20 @@ int main() {
 	char *filename;
 	double miss_rate;
 
+	filename = "ICACHE.txt";
 	for (int i = 64; i <= 512; i*=2) {
 		for (int j = 4; j <= 32; j*=2) {
-			filename = "ICACHE.txt";
 			miss_rate = simulate(i * BYTE, j * BYTE, filename);
 			printf("cache_size = %03d bytes, ", i);
 			printf("block_size = %02d bytes, ", j);
 			printf("memory_trace = %s, ", filename);
 			printf("miss_rate = %04.1f%%\n", miss_rate);
+		}
+	}
 
-			filename = "DCACHE.txt";
+	filename = "DCACHE.txt";
+	for (int i = 64; i <= 512; i*=2) {
+		for (int j = 4; j <= 32; j*=2) {
 			miss_rate = simulate(i * BYTE, j * BYTE, filename);
 			printf("cache_size = %03d bytes, ", i);
 			printf("block_size = %02d bytes, ", j);
