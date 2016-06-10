@@ -17,7 +17,7 @@ struct cache_content {
 	unsigned int timestamp;
 };
 
-double simulate(int cache_size, int block_size, int associativity, char *memory_trace) {
+double simulate(int cache_size, int block_size, int associativity, char const *memory_trace) {
 	cache_size /= associativity;
 
 	int offset_bit = (int) log2(block_size);
@@ -47,10 +47,10 @@ double simulate(int cache_size, int block_size, int associativity, char *memory_
 		unsigned int min_timestamp = UINT_MAX;
 		int min_timestamp_at = -1;
 
-		for (auto const &element : cache[index]) {
-			if (element.valid && element.tag == tag) {
+		for (int i = 0; i < associativity; ++i) {
+			if (cache[index][i].valid && cache[index][i].tag == tag) {
 				printf("hit = %02d\n", ++hit);
-				element.timestamp = hit + miss;
+				cache[index][i].timestamp = hit + miss;
 				is_hit = true;
 				break;
 			}
@@ -93,7 +93,7 @@ int size(int cache_size, int block_size, int associativity) {
 }
 
 int main() {
-	char *filename;
+	char const *filename;
 	double miss_rate;
 	int total_size;
 

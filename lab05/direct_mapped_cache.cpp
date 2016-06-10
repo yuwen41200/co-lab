@@ -14,7 +14,7 @@ struct cache_content {
 	unsigned int tag;
 };
 
-double simulate(int cache_size, int block_size, char *memory_trace) {
+double simulate(int cache_size, int block_size, char const *memory_trace) {
 	int offset_bit = (int) log2(block_size);
 	int index_bit = (int) log2(cache_size / block_size);
 	int cache_line = cache_size >> offset_bit;
@@ -50,7 +50,7 @@ double simulate(int cache_size, int block_size, char *memory_trace) {
 }
 
 int main() {
-	char *filename;
+	char const *filename;
 	double miss_rate;
 
 	filename = "ICACHE.txt";
