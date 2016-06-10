@@ -20,7 +20,7 @@ double simulate(int cache_size, int block_size, char const *memory_trace) {
 	int cache_line = cache_size >> offset_bit;
 
 	cache_content *cache = new cache_content[cache_line];
-	printf("cache_line = %02d\n", cache_line);
+	// printf("cache_line = %02d\n", cache_line);
 
 	for (int i = 0; i < cache_line; ++i)
 		cache[i].valid = false;
@@ -29,24 +29,24 @@ double simulate(int cache_size, int block_size, char const *memory_trace) {
 	FILE *fp = fopen(memory_trace, "r");
 
 	while (fscanf(fp, "%x", &address) != EOF) {
-		printf("%#010X\t", address);
+		// printf("%#010x\t", address);
 		unsigned int index = (address >> offset_bit) & (cache_line - 1);
 		unsigned int tag = address >> (index_bit + offset_bit);
 
 		if (cache[index].valid && cache[index].tag == tag)
-			printf("hit = %02d\n", ++hit);
+			++hit; // printf(" hit = %02d\n", ++hit);
 
 		else {
 			cache[index].valid = true;
 			cache[index].tag = tag;
-			printf("miss = %02d\n", ++miss);
+			++miss; // printf("miss = %02d\n", ++miss);
 		}
 	}
 
 	fclose(fp);
 	delete [] cache;
 
-	return miss / (hit + miss) * 100;
+	return (double) miss / (hit + miss) * 100;
 }
 
 int main() {

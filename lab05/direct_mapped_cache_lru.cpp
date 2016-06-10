@@ -39,7 +39,7 @@ double simulate(int cache_size, int block_size, int associativity, char const *m
 	FILE *fp = fopen(memory_trace, "r");
 
 	while (fscanf(fp, "%x", &address) != EOF) {
-		printf("%#010X\t", address);
+		printf("%#010x\t", address);
 		unsigned int index = (address >> offset_bit) & (cache_line - 1);
 		unsigned int tag = address >> (index_bit + offset_bit);
 
@@ -49,7 +49,7 @@ double simulate(int cache_size, int block_size, int associativity, char const *m
 
 		for (int i = 0; i < associativity; ++i) {
 			if (cache[index][i].valid && cache[index][i].tag == tag) {
-				printf("hit = %02d\n", ++hit);
+				printf(" hit = %02d\n", ++hit);
 				cache[index][i].timestamp = hit + miss;
 				is_hit = true;
 				break;
@@ -78,7 +78,7 @@ double simulate(int cache_size, int block_size, int associativity, char const *m
 	fclose(fp);
 	delete [] cache;
 
-	return miss / (hit + miss) * 100;
+	return (double) miss / (hit + miss) * 100;
 }
 
 int size(int cache_size, int block_size, int associativity) {
