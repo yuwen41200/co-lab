@@ -25,7 +25,7 @@ double simulate(int cache_size, int block_size, int associativity, char const *m
 	int cache_line = cache_size >> offset_bit;
 
 	cache_content **cache = new cache_content*[cache_line];
-	printf("cache_line = %02d\n", cache_line);
+	// printf("cache_line = %02d\n", cache_line);
 
 	for (int i = 0; i < cache_line; ++i) {
 		cache[i] = new cache_content[associativity];
@@ -39,7 +39,7 @@ double simulate(int cache_size, int block_size, int associativity, char const *m
 	FILE *fp = fopen(memory_trace, "r");
 
 	while (fscanf(fp, "%x", &address) != EOF) {
-		printf("%#010x\t", address);
+		// printf("%#010x\t", address);
 		unsigned int index = (address >> offset_bit) & (cache_line - 1);
 		unsigned int tag = address >> (index_bit + offset_bit);
 
@@ -49,7 +49,7 @@ double simulate(int cache_size, int block_size, int associativity, char const *m
 
 		for (int i = 0; i < associativity; ++i) {
 			if (cache[index][i].valid && cache[index][i].tag == tag) {
-				printf(" hit = %02d\n", ++hit);
+				++hit; // printf(" hit = %02d\n", ++hit);
 				cache[index][i].timestamp = hit + miss;
 				is_hit = true;
 				break;
@@ -64,7 +64,7 @@ double simulate(int cache_size, int block_size, int associativity, char const *m
 				}
 			}
 
-			printf("miss = %02d\n", ++miss);
+			++miss; // printf("miss = %02d\n", ++miss);
 			cache[index][min_timestamp_at].timestamp = hit + miss;
 			cache[index][min_timestamp_at].valid = true;
 			cache[index][min_timestamp_at].tag = tag;
@@ -97,7 +97,7 @@ int main() {
 	double miss_rate;
 	int total_size;
 
-	filename = "LU.txt";
+	filename = "RADIX.txt";
 	for (int i = 1; i <= 32; i*=2) {
 		for (int j = 1; j <= 8; j*=2) {
 			miss_rate = simulate(i * KIBIBYTE, 64 * BYTE, j * WAY, filename);
@@ -108,7 +108,7 @@ int main() {
 		}
 	}
 
-	filename = "RADIX.txt";
+	filename = "LU.txt";
 	for (int i = 1; i <= 32; i*=2) {
 		for (int j = 1; j <= 8; j*=2) {
 			miss_rate = simulate(i * KIBIBYTE, 64 * BYTE, j * WAY, filename);
