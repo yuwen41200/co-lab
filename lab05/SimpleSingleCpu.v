@@ -76,7 +76,7 @@ assign instr_jal = (instr[31:26] == 3); // JAL
 
 Mux #(.width(5)) MuxForWriteReg (
 	.data0_i(write_reg_temp),
-	.data1_i(31),
+	.data1_i(32'd31),
 	.select_i(instr_jal),
 	.data_o(write_reg)
 );

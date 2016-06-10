@@ -28,9 +28,9 @@ end
 
 always @(posedge clk) begin
 	if (Cpu.InstructionMemory.instr_o != 32'd0)
-		$fdisplay(fp1, "%h\n", Cpu.InstructionMemory.addr_i);
+		$fdisplay(fp1, "%h", Cpu.InstructionMemory.addr_i);
 	if (Cpu.DataMemory.mem_read_i || Cpu.DataMemory.mem_write_i)
-		$fdisplay(fp2, "%h\n", Cpu.DataMemory.addr_i);
+		$fdisplay(fp2, "%h", Cpu.DataMemory.addr_i);
 end
 
 endmodule
