@@ -88,7 +88,7 @@ int size(int cache_size, int block_size, int associativity) {
 	int index_bit = (int) log2(cache_size / block_size);
 	int cache_line = cache_size >> offset_bit;
 
-	int element_size = (32 - index_bit - offset_bit) + 1 + block_size;
+	int element_size = (32 - index_bit - offset_bit) + 1 + block_size * 8;
 	return cache_line * associativity * element_size;
 }
 
@@ -124,7 +124,7 @@ int main() {
 			total_size = size(i * KIBIBYTE, 64 * BYTE, j * WAY);
 			printf("cache_size = %02d kibibytes, ", i);
 			printf("associativity = %1d ways, ", j);
-			printf("total_size = %08d bits\n", total_size * 8);
+			printf("total_size = %06d bits\n", total_size);
 		}
 	}
 
